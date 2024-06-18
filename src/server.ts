@@ -4,7 +4,7 @@ import Voting from './models/voting';
 
 const app = express();
 
-const PORT = 3000;
+const PORT = 80;
 
 const votingCode = 'N36dlr';
 
