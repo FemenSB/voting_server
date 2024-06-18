@@ -14,6 +14,7 @@
   "dependencies": {
     "@types/node": "^20.11.24",
     "express": "^4.19.2",
+    "short-unique-id": "^5.2.0",
     "socket.io": "^4.7.4",
     "typescript": "^5.3.3"
   },
