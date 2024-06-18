@@ -1,4 +1,5 @@
 import Voting from '../models/voting.model';
+import { isString, isStringArray } from '../utils/type_guards';
 import VotingService from './voting.service';
 
 import { RequestHandler } from 'express';
@@ -22,12 +23,12 @@ export const getVoting: RequestHandler<GetVotingParams> = (req, res) => {
 };
 
 export const postVoting: RequestHandler = (req, res) => {
-  const { name, candidates } = req.body;
-  if (!name || !Array.isArray(candidates)) {
-    res.status(400).json({
+  if (!isRequestValid()) {
+    return res.status(400).json({
       error: 'Malformed voting'
     });
   }
+  const { name, candidates } = req.body;
   const voting: Voting = {
     name: name,
     code: randomUUID(),
@@ -35,4 +36,8 @@ export const postVoting: RequestHandler = (req, res) => {
   };
   votingService.startVoting(voting);
   res.json(voting);
+
+  function isRequestValid(): boolean {
+    return isString(req.body.name) && isStringArray(req.body.candidates);
+  }
 };
