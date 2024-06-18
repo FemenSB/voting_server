@@ -1,8 +1,9 @@
-import Voting from '../models/voting.model';
+import Voting, { VoteRequest } from '../models/voting.model';
+import { MalformedError, NotFoundError } from '../utils/errors';
 import { isString, isStringArray } from '../utils/type_guards';
 import VotingService from './voting.service';
 
-import { RequestHandler } from 'express';
+import { RequestHandler, Response } from 'express';
 import ShortUniqueId from 'short-unique-id';
 
 interface GetVotingParams {
@@ -15,18 +16,14 @@ const { randomUUID } = new ShortUniqueId({ length: 6 });
 export const getVoting: RequestHandler<GetVotingParams> = (req, res) => {
   const voting = votingService.getVoting(req.params.code);
   if (!voting) {
-    return res.status(404).json({
-      error: 'No such voting'
-    });
+    return respondNotFound(res);
   }
   res.json(voting);
 };
 
 export const postVoting: RequestHandler = (req, res) => {
   if (!isRequestValid()) {
-    return res.status(400).json({
-      error: 'Malformed voting'
-    });
+    return respondMalformed(res, 'Malformed voting');
   }
   const { name, candidates } = req.body;
   const voting: Voting = {
@@ -41,3 +38,30 @@ export const postVoting: RequestHandler = (req, res) => {
     return isString(req.body.name) && isStringArray(req.body.candidates);
   }
 };
+
+export const postVote: RequestHandler = (req, res) => {
+  try {
+    const voteRequest = new VoteRequest({...req.body, ...req.params});
+    votingService.vote(voteRequest);
+    res.send();
+  } catch (e) {
+    if (e instanceof MalformedError) {
+      respondMalformed(res, 'Malformed vote');
+    }
+    if (e instanceof NotFoundError) {
+      respondNotFound(res);
+    }
+  }
+};
+
+function respondMalformed(res: Response, message: string): void {
+  res.status(400).json({
+    error: message,
+  });
+}
+
+function respondNotFound(res: Response): void {
+  res.status(404).json({
+    error: 'No such voting',
+  });
+}
