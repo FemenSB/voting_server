@@ -70,8 +70,7 @@ export default class VotingService {
       throw new NotFoundError();
     }
     const candidates = voting.candidateSet;
-    if (voting.public.endTime >= this.now_ ||
-        candidates.size !== vote.length ||
+    if (candidates.size !== vote.length ||
         hasDuplicates(vote) ||
         !arrayContainedInSet(vote, candidates)) {
       throw new MalformedError();
@@ -99,7 +98,6 @@ export default class VotingService {
 
   private computeVotingResults_(voting: RunningVoting): VotingResults {
     const orderedCandidates = sortCandidates(voting.candidateSet, voting.votes);
-    console.log(orderedCandidates);
     const votes = Array.from(voting.votes).map(vote => {
       return {
         voter: vote[0],
