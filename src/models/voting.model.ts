@@ -1,10 +1,12 @@
 import { MalformedError } from '../utils/errors';
+import { Milliseconds } from '../utils/time';
 import { isString, isStringArray } from '../utils/type_guards';
 
 type Voting = {
   name: string;
   code: string;
   candidates: string[];
+  endTime: Milliseconds;
 };
 
 export default Voting;

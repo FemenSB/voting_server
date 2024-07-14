@@ -1,5 +1,6 @@
 import Voting, { VoteRequest } from '../models/voting.model';
 import { MalformedError, NotFoundError } from '../utils/errors';
+import { MinutesToMs } from '../utils/time';
 import { isString, isStringArray } from '../utils/type_guards';
 import VotingService from './voting.service';
 
@@ -21,6 +22,14 @@ export const getVoting: RequestHandler<GetVotingParams> = (req, res) => {
   res.json(voting);
 };
 
+export const getVotingResults: RequestHandler = (req, res) => {
+  const results = votingService.getVotingResults(req.params.code);
+  if (!results) {
+    return respondNotFound(res, 'Voting has nos results available');
+  }
+  res.json(results);
+};
+
 export const postVoting: RequestHandler = (req, res) => {
   if (!isRequestValid()) {
     return respondMalformed(res, 'Malformed voting');
@@ -30,6 +39,7 @@ export const postVoting: RequestHandler = (req, res) => {
     name: name,
     code: randomUUID(),
     candidates: candidates,
+    endTime: new Date().getTime() + MinutesToMs(5),
   };
   votingService.startVoting(voting);
   res.json(voting);
@@ -60,8 +70,8 @@ function respondMalformed(res: Response, message: string): void {
   });
 }
 
-function respondNotFound(res: Response): void {
+function respondNotFound(res: Response, message = 'No such voting'): void {
   res.status(404).json({
-    error: 'No such voting',
+    error: message,
   });
 }

@@ -9,3 +9,7 @@ export function hasDuplicates<T>(array: T[]): boolean {
   }
   return false;
 }
+
+export function arrayContainedInSet<T>(array: T[], set: Set<T>): boolean {
+  return array.every(element => set.has(element));
+}
