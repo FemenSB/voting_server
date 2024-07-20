@@ -1,7 +1,7 @@
 import Voting, { VoteRequest } from '../models/voting.model';
 import { arrayContainedInSet, hasDuplicates } from '../utils/array_utils';
 import { MalformedError, NotFoundError } from '../utils/errors';
-import { Milliseconds, MinutesToMs } from '../utils/time';
+import { Milliseconds, MinutesToMs, SecondsToMs } from '../utils/time';
 
 const RESULTS_EXPIRATION_TIME: Milliseconds = MinutesToMs(1);
 
@@ -80,10 +80,18 @@ export default class VotingService {
   private checkForEndedVotings_() {
     const now = this.now_;
     for (const [code, voting] of this.runningVotings_) {
-      if (voting.public.endTime >= now) return;
+      if (!shouldEndVoting(voting.public)) return;
       const result = this.computeVotingResults_(voting);
       this.votingResults_.set(code, result);
       this.runningVotings_.delete(code);
+    }
+
+    function shouldEndVoting(voting: Voting): boolean {
+      // Allow for the voting to keep running for a little longer than its
+      // public end time so that clients can still send their votes right when
+      // the voting ends
+      const endTime = voting.endTime + SecondsToMs(4);
+      return endTime <= now;
     }
   }
 
